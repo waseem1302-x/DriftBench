@@ -168,6 +168,12 @@ stdout/stderr and transaction logs. The version-controlled CI policy requires
 PostgreSQL/pgbench 16, scale 1, two clients, 3-second warmups and 5-second measurements.
 The PostgreSQL server must be running and its role/authentication configured first.
 
+A second live gate compares the PostgreSQL 16 `simple-update` builtin with the generated
+`simple_update` workload using `driftbench/benchmarking/policies/pgbench_ci_v1_simple_update.json`.
+Its thresholds are provisional copies of the select-only values and require calibration
+from local runs. Reinitialize the database with `pgbench --initialize --scale=1` before
+each gate run: simple-update grows `pgbench_history`, while provenance requires it empty.
+
 ```bash
 # Confirm that the pgbench client is major version 16, then create and initialize
 # a new database using an already configured PostgreSQL role.

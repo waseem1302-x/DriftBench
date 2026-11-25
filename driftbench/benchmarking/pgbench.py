@@ -24,6 +24,7 @@ from .metrics import (
     write_json_strict,
 )
 from .policy import (
+    BenchmarkPolicyError,
     PgBenchRegressionPolicy,
     evaluate_regression,
     validate_pgbench_policy_operational_limits,
@@ -352,6 +353,12 @@ def _run_phase(
     connection: PgBenchConnection,
     pgbench_binary: str,
 ) -> dict[str, Any]:
+    if policy.workload == "select_only":
+        builtin = "select-only"
+    elif policy.workload == "simple_update":
+        builtin = "simple-update"
+    else:
+        raise BenchmarkPolicyError("policy.workload must be select_only or simple_update")
     phase_dir.mkdir(parents=True, exist_ok=True)
     stdout_path = phase_dir / "pgbench.stdout.log"
     stderr_path = phase_dir / "pgbench.stderr.log"
@@ -371,7 +378,7 @@ def _run_phase(
         f"--log-prefix={log_prefix}",
     ]
     if role == "baseline":
-        command.extend(["--builtin", "select-only"])
+        command.extend(["--builtin", builtin])
     else:
         command.extend(["--file", str(candidate_script.resolve())])
     command.append(connection.database)

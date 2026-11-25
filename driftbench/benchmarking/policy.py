@@ -177,8 +177,8 @@ def parse_pgbench_policy_payload(raw: Any) -> PgBenchRegressionPolicy:
     if _required(root, "benchmark", "policy") != "pgbench":
         raise BenchmarkPolicyError("policy.benchmark must be pgbench")
     workload = _required(root, "workload", "policy")
-    if workload != "select_only":
-        raise BenchmarkPolicyError("policy.workload must be select_only")
+    if workload not in ("select_only", "simple_update"):
+        raise BenchmarkPolicyError("policy.workload must be select_only or simple_update")
     execution_order = _required(root, "execution_order", "policy")
     if execution_order != "alternating_baseline_first":
         raise BenchmarkPolicyError(

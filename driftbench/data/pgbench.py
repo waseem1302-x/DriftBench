@@ -89,8 +89,8 @@ END;
 
 BEGIN;
 UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;
-INSERT INTO pgbench_history (tid, bid, aid, delta, mtime)
-    VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
+SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
+INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
 END;
 """,
     "select_only": """\
@@ -206,7 +206,7 @@ class PgBenchQueries(BenchmarkArtifact):
 
     Args:
         workload: "tpcb" (default, mixed read-write),
-                  "simple_update" (UPDATE + INSERT only),
+                  "simple_update" (UPDATE + SELECT + INSERT),
                   "select_only" (read-only).
         clients: Number of concurrent clients for the run script.
         duration: Benchmark run duration in seconds.

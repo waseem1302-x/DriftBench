@@ -130,6 +130,23 @@ jobs:
           DRIFTBENCH_PGBENCH_ARTIFACT_DIR: benchmark-artifacts/results
         run: python -m unittest test.benchmarks.pgbench.test_postgres_integration -v
 
+      - name: Run and verify the simple-update regression gate
+        run: |
+          pgbench --initialize --scale=1
+          python -c "from driftbench.data.pgbench import queries; queries(workload='simple_update', clients=2, duration=5).generate(output_dir='benchmark-artifacts/generated', force=True)"
+          driftbench benchmark pgbench \
+            --policy driftbench/benchmarking/policies/pgbench_ci_v1_simple_update.json \
+            --candidate-script benchmark-artifacts/generated/pgbench/queries/pgbench_simple_update.sql \
+            --output-dir benchmark-artifacts/results-simple-update \
+            --database "${PGDATABASE}" \
+            --host "${PGHOST}" \
+            --port "${PGPORT}" \
+            --username "${PGUSER}" \
+            --json > benchmark-artifacts/cli-result-simple-update.json
+          driftbench benchmark verify \
+            --bundle benchmark-artifacts/results-simple-update \
+            --json > benchmark-artifacts/verifier-result-simple-update.json
+
       - name: Upload pgbench regression evidence
         if: always()
         uses: actions/upload-artifact@v4
